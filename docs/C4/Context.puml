@@ -11,7 +11,7 @@ System(smart_home, "Smart Home App", "Приложение управляет о
 System_Ext(sensor, "House Thermal Sensor", "Модуль управления отоплением")
 
 Rel(client, smart_home, "Удалённое включение/выключение отопления и просмотр текущей температуры")
-Rel(sensor, smart_home, "Регистрация датчика")
+Rel(sensor, smart_home, "Регистрация датчика при включении")
 Rel(smart_home, sensor, "Управление датчиком и получение данных о температуре")
 
 @enduml
