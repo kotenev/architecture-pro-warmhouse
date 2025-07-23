@@ -1,18 +1,17 @@
 @startuml
-title WarmHouse Context Diagram
+title Smart Home Context Diagram
 
 top to bottom direction
 
 !includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
 
-Person(user, "User", "A user of the warm house system")
-Person(admin, "Administrator", "An administrator managing the system")
-System(WarmHouseSystem, "WarmHouse System", "System controls temperature data, manage sensors and users")
+Person(client, "Web Client", "Web-клиент приложения Smart Home")
+System(smart_home, "Smart Home App", "Приложение управляет отоплением в доме и проверяет температуру")
 
-System_Ext(api, "House Thermal Sensor", "External API for manage thermal sensor data")
+System_Ext(sensor, "House Thermal Sensor", "Модуль управления отоплением")
 
-Rel(user, WarmHouseSystem, "Uses the system")
-Rel(admin,WarmHouseSystem,"Manages the system")
-Rel(WarmHouseSystem,api,"Manage warm house sensor and fetching temperature data")
+Rel(client, smart_home, "Удалённое включение/выключение отопления и просмотр текущей температуры")
+Rel(sensor, smart_home, "Регистрация датчика")
+Rel(smart_home, sensor, "Управление датчиком и получение данных о температуре")
 
 @enduml
