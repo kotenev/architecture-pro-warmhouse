@@ -1,0 +1,109 @@
+@startuml
+title "ER-диаграмма для экосистемы 'Умный дом'"
+
+' Настройка внешнего вида
+!define TABLE_BG_COLOR #FFFFFF
+!define TABLE_BORDER_COLOR #333333
+hide empty methods
+skinparam class {
+    BackgroundColor TABLE_BG_COLOR
+    BorderColor TABLE_BORDER_COLOR
+    ArrowColor TABLE_BORDER_COLOR
+}
+
+' Сущности
+entity "Users" as users {
+  + user_id [PK]
+  --
+  email
+  password_hash
+  full_name
+  created_at
+}
+
+entity "Houses" as houses {
+  + house_id [PK]
+  --
+  # user_id [FK]
+  name
+  address
+  created_at
+}
+
+entity "Devices" as devices {
+  + device_id [PK]
+  --
+  # house_id [FK]
+  # type_id [FK]
+  name
+  serial_number
+  status
+  created_at
+}
+
+entity "DeviceTypes" as device_types {
+  + type_id [PK]
+  --
+  type_name
+  description
+}
+
+entity "Modules" as modules {
+    + module_id [PK]
+    --
+    # device_id [FK]
+    module_type
+    current_value
+    units
+    last_updated
+}
+
+entity "TelemetryData" as telemetry {
+    + telemetry_id [PK]
+    --
+    # module_id [FK]
+    timestamp
+    value
+}
+
+entity "AutomationRules" as rules {
+    + rule_id [PK]
+    --
+    # user_id [FK]
+    name
+    is_enabled
+}
+
+entity "RuleTriggers" as triggers {
+    + trigger_id [PK]
+    --
+    # rule_id [FK]
+    # module_id [FK]
+    condition
+    threshold_value
+}
+
+entity "RuleActions" as actions {
+    + action_id [PK]
+    --
+    # rule_id [FK]
+    # module_id [FK]
+    command
+    command_value
+}
+
+
+' Связи
+users        ||--o{ houses
+houses       ||--o{ devices
+device_types ||--o{ devices
+devices      ||--o{ modules
+modules      ||--o{ telemetry
+
+users        ||--o{ rules
+rules        ||--o{ triggers
+rules        ||--o{ actions
+modules      }o--|| triggers
+modules      }o--|| actions
+
+@enduml
