@@ -74,19 +74,19 @@
 
 **Диаграмма контейнеров (Containers)**
 
-Добавьте диаграмму.
+[Диаграмма контейнеров C4](https://github.com/kotenev/architecture-pro-warmhouse/blob/warmhouse/docs/C4/Container.puml)
 
 **Диаграмма компонентов (Components)**
 
-Добавьте диаграмму для каждого из выделенных микросервисов.
+[Диаграмма компонентов C4](https://github.com/kotenev/architecture-pro-warmhouse/blob/warmhouse/docs/C4/Component.puml)
 
 **Диаграмма кода (Code)**
 
-Добавьте одну диаграмму или несколько.
+[Диаграмма кода C4](https://github.com/kotenev/architecture-pro-warmhouse/blob/warmhouse/docs/C4/Code.puml)
 
 # Задание 3. Разработка ER-диаграммы
 
-Добавьте сюда ER-диаграмму. Она должна отражать ключевые сущности системы, их атрибуты и тип связей между ними.
+[ER-диаграмма](https://github.com/kotenev/architecture-pro-warmhouse/blob/warmhouse/docs/ERD.puml)
 
 # Задание 4. Создание и документирование API
 
