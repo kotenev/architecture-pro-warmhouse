@@ -1,28 +1,75 @@
 @startuml
-title WormHouse Web Application Component Diagram
-
-top to bottom direction
-
 !includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
 
-Container_Boundary(FitLifeSystem, "FitLife System") {
-  Container(WebApp, "Web Application", "Java, Spring", "Handles user interactions")
-  Container(Database, "Database", "PostgreSQL", "Stores user data and schedules")
+title Component Diagram for Smart Home System
+
+' -- Внешние по отношению к компонентам контейнеры для контекста --
+Container(api_gateway, "API Gateway", "Go / Nginx", "Маршрутизирует внешние запросы к компонентам API Controller.")
+Container(message_broker, "Брокер сообщений", "RabbitMQ / Kafka", "Обеспечивает асинхронное взаимодействие.")
+ContainerDb(user_db, "База данных пользователей", "PostgreSQL")
+ContainerDb(device_db, "База данных устройств", "PostgreSQL")
+ContainerDb(telemetry_db, "База данных телеметрии", "TimescaleDB / InfluxDB")
+
+' =======================================
+' Сервис пользователей (User Service)
+' =======================================
+System_Boundary(user_service_c, "Сервис пользователей (User Service)") {
+    Component(user_api, "API Controller", "Go, Gin", "Принимает HTTP запросы для регистрации и аутентификации.")
+    Component(user_logic, "User Logic", "Go", "Реализует бизнес-логику управления пользователями (валидация, JWT).")
+    Component(user_repo, "User Repository", "Go", "Обеспечивает CRUD-операции с данными пользователей в БД.")
 }
 
-Container(WebApp, "Web Application", "Java, Spring") {
-  Component(AuthController, "AuthController", "Handles authentication and authorization")
-  Component(UserController, "UserController", "Manages user profiles")
-  Component(ScheduleController, "ScheduleController", "Manages schedules")
-  Component(PaymentController, "PaymentController", "Handles payment processing")
-  Component(ServiceLayer, "Service Layer", "Business logic")
-  Component(RepositoryLayer, "Repository Layer", "Data access logic")
+' =======================================
+' Сервис устройств (Device Service)
+' =======================================
+System_Boundary(device_registry_c, "Сервис устройств (Device Service)") {
+    Component(device_api, "API Controller", "Go, Gin", "Обрабатывает HTTP запросы на управление устройствами (CRUD).")
+    Component(device_logic, "Device Logic", "Go", "Реализует бизнес-логику управления реестром устройств.")
+    Component(device_repo, "Device Repository", "Go", "Обеспечивает доступ к метаданным устройств в БД.")
 }
 
-Rel(AuthController,ServiceLayer,"Calls business logic")
-Rel(UserController,ServiceLayer,"Calls business logic")
-Rel(ScheduleController,ServiceLayer,"Calls business logic")
-Rel(PaymentController,ServiceLayer,"Calls business logic")
-Rel(ServiceLayer,RepositoryLayer,"Reads/Writes data")
-Rel(RepositoryLayer,Database,"Reads/Writes user data")
+' =======================================
+' Сервис управления (Control Service)
+' =======================================
+System_Boundary(device_control_c, "Сервис управления (Control Service)") {
+    Component(control_api, "API Controller", "Go, Gin", "Принимает команды управления (включить, выключить и т.д.).")
+    Component(control_logic, "Command Logic", "Go", "Валидирует команды и права доступа, формирует сообщение для брокера.")
+    Component(amqp_publisher, "Message Publisher", "Go, RabbitMQ Client", "Публикует команды в брокер сообщений для доставки устройствам.")
+}
+
+' =======================================
+' Сервис телеметрии (Telemetry Service)
+' =======================================
+System_Boundary(telemetry_service_c, "Сервис телеметрии (Telemetry Service)") {
+    Component(amqp_consumer, "Message Consumer", "Go, RabbitMQ Client", "Подписывается на сообщения телеметрии от устройств через брокер.")
+    Component(telemetry_logic, "Telemetry Processor", "Go", "Обрабатывает и валидирует входящие данные с датчиков.")
+    Component(telemetry_repo, "Telemetry Repository", "Go", "Обеспечивает запись обработанных данных телеметрии в Time-Series БД.")
+}
+
+
+' -- Связи (Relationships) --
+
+' Связи с API Gateway
+Rel(api_gateway, user_api, "Запросы по пользователям ( /register, /login )", "HTTP/JSON")
+Rel(api_gateway, device_api, "Запросы по устройствам ( /devices )", "HTTP/JSON")
+Rel(api_gateway, control_api, "Команды управления ( /devices/{id}/control )", "HTTP/JSON")
+
+' Внутренние связи компонентов
+Rel(user_api, user_logic, "Использует")
+Rel(user_logic, user_repo, "Использует")
+Rel(user_repo, user_db, "Читает/пишет", "SQL")
+
+Rel(device_api, device_logic, "Использует")
+Rel(device_logic, device_repo, "Использует")
+Rel(device_repo, device_db, "Читает/пишет", "SQL")
+
+Rel(control_api, control_logic, "Использует")
+Rel(control_logic, amqp_publisher, "Отправляет команду")
+Rel(amqp_publisher, message_broker, "Публикует сообщение", "AMQP")
+
+Rel(message_broker, amqp_consumer, "Доставляет сообщения", "AMQP")
+Rel(amqp_consumer, telemetry_logic, "Передает данные для обработки")
+Rel(telemetry_logic, telemetry_repo, "Использует для сохранения")
+Rel(telemetry_repo, telemetry_db, "Пишет данные", "SQL")
+
 @enduml

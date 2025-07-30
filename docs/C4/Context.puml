@@ -3,7 +3,7 @@ title Smart Home Context Diagram
 
 top to bottom direction
 
-!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Context.puml
 
 Person(client, "Web Client", "Web-клиент приложения Smart Home")
 System(smart_home, "Smart Home App", "Приложение управляет отоплением в доме и проверяет температуру")

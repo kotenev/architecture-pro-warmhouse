@@ -1,29 +1,58 @@
 @startuml
-title WarmHouse Container Diagram
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Container.puml
 
-top to bottom direction
+title Container diagram for Smart Home System
 
-!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+' Определяем действующих лиц и внешние системы
+Person(user, "Пользователь", "Клиент, использующий систему 'Умный дом' через веб-интерфейс.")
+System_Ext(smart_device, "Умное устройство", "Любое поддерживаемое устройство (датчик, реле, камера и т.д.), подключенное к интернету.")
 
-Person(user, "User", "A user of the fitness club system")
-Person(admin, "Administrator", "An administrator managing the system")
-System(FitLifeSystem, "FitLife System", "System managing memberships, schedules, and payments")
+' Определяем границы системы
+System_Boundary(c1, "Экосистема 'Умный дом'") {
 
-Container_Boundary(FitLifeSystem, "FitLife System") {
-  Container(WebApp, "Web Application", "Java, Spring", "Handles user interactions")
-  Container(MobileApp, "Mobile Application", "Kotlin, Swift", "Allows users to manage their membership")
-  Container(PaymentService, "Payment Service", "Node.js", "Processes payments")
-  Container(Database, "Database", "PostgreSQL", "Stores user data and schedules")
+    ' --- Клиентское приложение ---
+    Container(spa, "Single-Page Application", "JavaScript, React/Vue/Angular", "Предоставляет пользователю интерфейс для управления умным домом.")
+
+    ' --- Внутренние сервисы (микросервисы) ---
+    Container(api_gateway, "API Gateway", "Go / Nginx", "Единая точка входа. Маршрутизирует запросы от SPA к нужным микросервисам, обеспечивает безопасность.")
+
+    Container(user_service, "Сервис пользователей (User Service)", "Go", "Отвечает за регистрацию, аутентификацию и управление данными пользователей.")
+    ContainerDb(user_db, "База данных пользователей", "PostgreSQL", "Хранит информацию о профилях пользователей.")
+
+    Container(device_service, "Сервис устройств (Device Service)", "Go", "Отвечает за регистрацию, настройку и управление метаданными устройств.")
+    ContainerDb(device_db, "База данных устройств", "PostgreSQL", "Хранит информацию об устройствах, их типах и настройках.")
+
+    Container(telemetry_service, "Сервис телеметрии (Telemetry Service)", "Go", "Сбор, обработка и предоставление данных с датчиков.")
+    ContainerDb(telemetry_db, "База данных телеметрии", "TimescaleDB / InfluxDB", "Хранит временные ряды показаний датчиков (температура, состояние и т.д.).")
+
+    Container(control_service, "Сервис управления (Control Service)", "Go", "Отправляет команды на умные устройства.")
+
+    ' --- Брокер сообщений для асинхронного взаимодействия ---
+    Container(message_broker, "Брокер сообщений", "RabbitMQ / Kafka", "Обеспечивает асинхронную и надёжную доставку команд и данных телеметрии.")
 }
 
-System_Ext(api, "Third-Party API", "External API for fitness data integration")
-System_Ext(bank, "Bank System", "External bank for processing payments")
+' --- Определяем связи ---
 
-Rel(user, WebApp, "Uses the system")
-Rel(admin, WebApp,"Manages the system")
-Rel(WebApp,PaymentService,"Processes payment requests")
-Rel(PaymentService,bank,"Processes payments")
-Rel(WebApp,Database,"Reads/Writes user data")
-Rel(MobileApp,Database,"Reads/Writes user data")
-Rel(WebApp,api,"Fetches fitness data")
+' Пользователь и система
+Rel(user, spa, "Управляет устройствами, просматривает данные", "HTTPS")
+Rel(spa, api_gateway, "Отправляет API-запросы", "HTTPS/JSON")
+
+' API Gateway и внутренние сервисы
+Rel(api_gateway, user_service, "Проксирует запросы аутентификации и управления профилем", "HTTP")
+Rel(api_gateway, device_service, "Проксирует запросы на управление устройствами (CRUD)", "HTTP")
+Rel(api_gateway, telemetry_service, "Проксирует запросы на получение истории данных", "HTTP")
+Rel(api_gateway, control_service, "Проксирует запросы на отправку команд", "HTTP")
+
+' Связи сервисов с их базами данных
+Rel(user_service, user_db, "Читает/пишет данные", "TCP/IP")
+Rel(device_service, device_db, "Читает/пишет данные", "TCP/IP")
+Rel(telemetry_service, telemetry_db, "Пишет и читает данные", "TCP/IP")
+
+' Асинхронное взаимодействие через брокер
+Rel(control_service, message_broker, "Отправляет команду на выполнение", "AMQP/MQTT")
+Rel(telemetry_service, message_broker, "Подписывается на данные телеметрии", "AMQP/MQTT")
+
+' Устройства и система
+Rel(smart_device, message_broker, "Отправляет данные телеметрии и получает команды", "AMQP/MQTT")
+
 @enduml
