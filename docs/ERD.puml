@@ -59,6 +59,8 @@ entity "Module" as modules {
     # device_id [FK]
     type_id
     module_name
+    current_value
+    units
     status
     created_at
     updated_at
