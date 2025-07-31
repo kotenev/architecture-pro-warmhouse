@@ -12,98 +12,124 @@ skinparam class {
 }
 
 ' Сущности
-entity "Users" as users {
-  + user_id [PK]
+entity "User" as users {
+  + id [PK]
   --
   email
   password_hash
-  full_name
+  user_name
   created_at
+  updated_at
 }
 
-entity "Houses" as houses {
-  + house_id [PK]
+entity "House" as houses {
+  + id [PK]
   --
   # user_id [FK]
-  name
-  address
+  house_name
+  house_address
   created_at
+  updated_at
 }
 
-entity "Devices" as devices {
-  + device_id [PK]
+entity "Device" as devices {
+  + id [PK]
   --
-  # house_id [FK]
   # type_id [FK]
-  name
+  # house_id [FK]
+  device_name
+  vendor_name
+  model_name
   serial_number
   status
   created_at
+  updated_at
 }
 
-entity "DeviceTypes" as device_types {
-  + type_id [PK]
+entity "DeviceType" as devicetypes {
+  + id [PK]
   --
   type_name
   description
 }
 
-entity "Modules" as modules {
-    + module_id [PK]
+entity "Module" as modules {
+    + id [PK]
     --
     # device_id [FK]
-    module_type
-    current_value
-    units
-    last_updated
+    type_id
+    module_name
+    status
+    created_at
+    updated_at
+}
+
+entity "ModuleType" as moduletypes {
+  + id [PK]
+  --
+  type_name
+  description
 }
 
 entity "TelemetryData" as telemetry {
-    + telemetry_id [PK]
+    + id [PK]
     --
     # module_id [FK]
     timestamp
+    scope
+    resource_attributes
+    record
+    record_type
     value
 }
 
-entity "AutomationRules" as rules {
-    + rule_id [PK]
+entity "Rule" as rules {
+    + id [PK]
     --
     # user_id [FK]
-    name
-    is_enabled
+    rule_name
+    status
+    created_at
+    updated_at
 }
 
-entity "RuleTriggers" as triggers {
-    + trigger_id [PK]
+entity "Trigger" as triggers {
+    + id [PK]
     --
     # rule_id [FK]
     # module_id [FK]
+    trigger_name
     condition
     threshold_value
+    status
+    created_at
+    updated_at
 }
 
-entity "RuleActions" as actions {
-    + action_id [PK]
+entity "Action" as actions {
+    + id [PK]
     --
     # rule_id [FK]
     # module_id [FK]
     command
     command_value
+    created_at
+    updated_at
 }
 
 
 ' Связи
-users        ||--o{ houses
-houses       ||--o{ devices
-device_types ||--o{ devices
-devices      ||--o{ modules
-modules      ||--o{ telemetry
-
-users        ||--o{ rules
-rules        ||--o{ triggers
-rules        ||--o{ actions
-modules      }o--|| triggers
-modules      }o--|| actions
+users   ||--o{ houses
+users   ||--o{ rules
+houses  ||--o{ devices
+devices }o--|| devicetypes
+devices ||--o{ modules
+devices ||--o{ telemetry
+modules }o--|| moduletypes
+modules ||--o{ telemetry
+modules ||--o{ triggers
+modules ||--o{ actions
+rules   ||--o{ triggers
+rules   ||--o{ actions
 
 @enduml
