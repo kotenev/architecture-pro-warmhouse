@@ -5,30 +5,30 @@ title Container diagram for Smart Home System
 
 ' Определяем действующих лиц и внешние системы
 Person(user, "Пользователь", "Клиент, использующий систему 'Умный дом' через веб-интерфейс.")
-System_Ext(smart_device, "Умное устройство", "Любое поддерживаемое устройство (датчик, реле, камера и т.д.), подключенное к интернету.")
+System_Ext(smart_device, "Smart Device (Умное устройство)", "Любое поддерживаемое устройство (датчик, реле, камера и т.д.), подключенное к интернету.")
 
 ' Определяем границы системы
 System_Boundary(c1, "Экосистема 'Умный дом'") {
 
     ' --- Клиентское приложение ---
-    Container(spa, "Single-Page Application", "JavaScript, React/Vue/Angular", "Предоставляет пользователю интерфейс для управления умным домом.")
+    Container(spa, "Single-Page Application", "JavaScript, React/Vue/Angular", "Предоставляет пользователю интерфейс для управления умным домом")
 
     ' --- Внутренние сервисы (микросервисы) ---
-    Container(api_gateway, "API Gateway", "Go / Nginx", "Единая точка входа. Маршрутизирует запросы от SPA к нужным микросервисам, обеспечивает безопасность.")
+    Container(api_gateway, "API Gateway", "Go / Nginx", "Единая точка входа. Маршрутизирует запросы от SPA к нужным микросервисам, обеспечивает безопасность")
 
-    Container(user_service, "Сервис пользователей (User Service)", "Go", "Отвечает за регистрацию, аутентификацию и управление данными пользователей.")
-    ContainerDb(user_db, "База данных пользователей", "PostgreSQL", "Хранит информацию о профилях пользователей.")
+    Container(user_service, "User Service (Сервис пользователей)", "Go", "Отвечает за регистрацию, аутентификацию и управление данными пользователей")
+    ContainerDb(user_db, "User DB (База данных пользователей)", "PostgreSQL", "Хранит информацию о профилях пользователей")
 
-    Container(device_service, "Сервис устройств (Device Service)", "Go", "Отвечает за регистрацию, настройку и управление метаданными устройств.")
-    ContainerDb(device_db, "База данных устройств", "PostgreSQL", "Хранит информацию об устройствах, их типах и настройках.")
+    Container(device_service, "Device Service (Сервис устройств)", "Go", "Отвечает за регистрацию, настройку и управление метаданными устройств")
+    ContainerDb(device_db, "Device DB (База данных устройств)", "PostgreSQL", "Хранит информацию об устройствах, их типах и настройках")
 
-    Container(telemetry_service, "Сервис телеметрии (Telemetry Service)", "Go", "Сбор, обработка и предоставление данных с датчиков.")
-    ContainerDb(telemetry_db, "База данных телеметрии", "TimescaleDB / InfluxDB", "Хранит временные ряды показаний датчиков (температура, состояние и т.д.).")
+    Container(telemetry_service, "Telemetry Service (Сервис телеметрии)", "Go", "Сбор, обработка и предоставление данных с датчиков")
+    ContainerDb(telemetry_db, "Telemetry DB (База данных телеметрии)", "TimescaleDB / InfluxDB", "Хранит временные ряды показаний датчиков (температура, состояние и т.д.)")
 
-    Container(control_service, "Сервис управления (Control Service)", "Go", "Отправляет команды на умные устройства.")
+    Container(control_service, "Control Service (Сервис управления)", "Go", "Отправляет команды на умные устройства")
 
     ' --- Брокер сообщений для асинхронного взаимодействия ---
-    Container(message_broker, "Брокер сообщений", "RabbitMQ / Kafka", "Обеспечивает асинхронную и надёжную доставку команд и данных телеметрии.")
+    Container(message_broker, "Message Broker (Брокер сообщений)", "RabbitMQ / Kafka", "Обеспечивает асинхронную и надёжную доставку команд и данных телеметрии")
 }
 
 ' --- Определяем связи ---
@@ -46,7 +46,7 @@ Rel(api_gateway, control_service, "Проксирует запросы на от
 ' Связи сервисов с их базами данных
 Rel(user_service, user_db, "Читает/пишет данные", "TCP/IP")
 Rel(device_service, device_db, "Читает/пишет данные", "TCP/IP")
-Rel(telemetry_service, telemetry_db, "Пишет и читает данные", "TCP/IP")
+Rel(telemetry_service, telemetry_db, "Читает/пишет данные", "TCP/IP")
 
 ' Асинхронное взаимодействие через брокер
 Rel(control_service, message_broker, "Отправляет команду на выполнение", "AMQP/MQTT")
