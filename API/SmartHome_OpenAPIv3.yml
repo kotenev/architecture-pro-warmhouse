@@ -9,77 +9,145 @@ tags:
     description: Сервис пользователей
   - name: devices
     description: Сервис устройств
+  - name: control
+    description: Сервис управления
+  - name: telemetry
+    description: Сервис телеметрии
 paths:
   /users/register:
     post:
       tags:
         - users
-      description: 'Регистрация нового пользователя в системе'
+      description: "Регистрация нового пользователя в системе"
       operationId: registerUser
       requestBody:
-        description: 'Создание нового пользователя в системе'
+        description: "Создание нового пользователя в системе"
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserNew'
+              $ref: "#/components/schemas/UserNew"
         required: true
       responses:
         '201':
-          description: 'Пользователь успешно создан'
+          description: "Пользователь успешно создан"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserCreated'
+                $ref: "#/components/schemas/UserCreated"
         '400':
-          description: 'Неверный формат данных (например, невалидный email)'
+          description: "Неверный формат данных (например, невалидный email)"
         '409':
-          description: 'Пользователь с таким email уже существует'
+          description: "Пользователь с таким email уже существует"
   /users/login:
     post:
       tags:
         - users
-      description: 'Проверка учётных данных и возвращение JWT для входа в систему'
+      description: "Проверка учётных данных и возвращение JWT для входа в систему"
       operationId: loginUser
       requestBody:
-        description: 'Учётные данные пользователя'
+        description: "Учётные данные пользователя"
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserCreds'
+              $ref: "#/components/schemas/UserCreds"
         required: true
       responses:
         '200':
-          description: 'Пользователь успешно создан'
+          description: "Пользователь успешно создан"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserToken'
+                $ref: "#/components/schemas/UserToken"
         '401':
-          description: 'Неверный email или пароль'
+          description: "Неверный email или пароль"
   /devices/register:
     post:
       tags:
         - devices
-      description: 'Регистрирует новое устройство и привязывает его к дому пользователя'
+      description: "Регистрирует новое устройство и привязывает его к дому пользователя"
       operationId: registerDevice
       requestBody:
-        description: 'Данные о регистрируемом устройстве'
+        description: "Данные о регистрируемом устройстве"
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/DeviceNew'
+              $ref: "#/components/schemas/DeviceNew"
         required: true
       responses:
         '201':
-          description: 'Устройство успешно добавлено'
+          description: "Устройство успешно добавлено"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DeviceAdded'
+                $ref: "#/components/schemas/DeviceAdded"
         '401':
-          description: 'Пользователь не авторизован'
+          description: "Пользователь не авторизован"
         '404':
-          description: 'Указанный house_id или type_id не найден'
+          description: "Указанный house_id или type_id не найден"
+  /control/{moduleId}/command:
+    post:
+      tags:
+        - control
+      description: "Принимает команды для асинхронной отправки на указанный модуль устройства через брокер сообщений"
+      operationId: commandModule
+      requestBody:
+        description: "Данные для асинхронной отправки"
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CommandData"
+        required: true
+      responses:
+        '202':
+          description: "Команда принята к исполнению, но еще не выполнена"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CommandAccept"
+        '401':
+          description: "Пользователь не авторизован или не имеет прав на управление этим модулем"
+        '404':
+          description: "Модуль с moduleId не найден"
+        '500':
+          description: "Ошибка при отправке команды в брокер"
+  /telemetry/{moduleId}/history:
+    get:
+      tags:
+        - telemetry
+      description: "Возвращает временной ряд показаний для указанного модуля с фильтрацией по времени"
+      operationId: historyTelemetry
+      parameters:
+        - name: start_time
+          in: query
+          description: Время начала выборки истории
+          schema:
+            type: string
+            format: date-time
+            example: "2025-07-30T00:00:00Z"
+        - name: end_time
+          in: query
+          description: Время конца выборки истории
+          schema:
+            type: string
+            format: date-time
+            example: "2025-08-03T00:00:00Z"
+        - name: limit
+          in: query
+          description: "Максимальное количество записей"
+          schema:
+            type: integer
+            default: 100
+      responses:
+        '200':
+          description: "Успешный запрос"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TelemetryHistory"
+        '401':
+          description: "Пользователь не авторизован"
+        '404':
+          description: "Модуль с moduleId не найден"
 components:
   schemas:
     UserNew:
@@ -87,27 +155,27 @@ components:
       properties:
         user_name:
           type: string
-          example: 'Владимир Котенёв'
+          example: "Владимир Котенёв"
         email:
           type: string
-          example: 'vkotenev@yandex.ru'
+          example: "vkotenev@yandex.ru"
         password:
           type: string
           format: password
-          example: 'P@ss-wOrd'
+          example: "P@ss-wOrd"
     UserCreated:
       type: object
       properties:
         user_id:
           type: string
           format: uuid
-          example: 1a7f3e4c-9d6b-4f8a-b1e9-7c2a7f0e5d8b
+          example: "1a7f3e4c-9d6b-4f8a-b1e9-7c2a7f0e5d8b"
         user_name:
           type: string
-          example: 'Владимир Котенёв'
+          example: "Владимир Котенёв"
         email:
           type: string
-          example: 'vkotenev@yandex.ru'
+          example: "vkotenev@yandex.ru"
         created_at:
           type: string
           format: date-time
@@ -117,17 +185,17 @@ components:
       properties:
         email:
           type: string
-          example: 'vkotenev@yandex.ru'
+          example: "vkotenev@yandex.ru"
         password:
           type: string
           format: password
-          example: 'P@ss-wOrd'
+          example: "P@ss-wOrd"
     UserToken:
       type: object
       properties:
         access_token:
           type: string
-          example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1NzA5MDk3MDMsImlzcyI6Imh0dHBzOi8vbG9jYWxob3N0OjQ0MzQxIiwiYXVkIjoiaHR0cHM6Ly9sb2NhbGhvc3Q6NDQzNDEifQ.Is7QtMiknbSYHq8MFryCfXW25C8oK9tFZlD2jHEQTuo'
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1NzA5MDk3MDMsImlzcyI6Imh0dHBzOi8vbG9jYWxob3N0OjQ0MzQxIiwiYXVkIjoiaHR0cHM6Ly9sb2NhbGhvc3Q6NDQzNDEifQ.Is7QtMiknbSYHq8MFryCfXW25C8oK9tFZlD2jHEQTuo"
         token_type:
           type: string
           example: "Bearer"
@@ -176,3 +244,40 @@ components:
           type: string
           format: date-time
           example: "2025-07-30T10:05:00Z"
+    CommandData:
+      type: object
+      properties:
+        command:
+          type: string
+          example: "SET_VALUE"
+        value:
+          type: string
+          example: "21.5"
+    CommandAccept:
+      type: object
+      properties:
+        result:
+          type: string
+          example: "Command accepted for processing"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-07-30T10:10:00Z"
+    TelemetryData:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-07-30T10:09:15Z"
+        value:
+          type: string
+          example: "20.1"
+    TelemetryHistory:
+      type: object
+      properties:
+        module_id:
+          type: integer
+          example: 123
+        data:
+          $ref: '#/components/schemas/TelemetryData'
