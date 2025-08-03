@@ -66,7 +66,7 @@
 
 ### 5. Визуализация контекста системы — диаграмма С4
 
-[Диаграмма контекста C4](https://github.com/kotenev/architecture-pro-warmhouse/blob/warmhouse/docs/C4/Context.puml)
+[Диаграмма контекста C4](https://github.com/kotenev/architecture-pro-warmhouse/blob/warmhouse/diagrams/context/SmartHome_Context.puml)
 
 # Задание 2. Проектирование микросервисной архитектуры
 
@@ -74,19 +74,19 @@
 
 **Диаграмма контейнеров (Containers)**
 
-[Диаграмма контейнеров C4](https://github.com/kotenev/architecture-pro-warmhouse/blob/warmhouse/docs/C4/Container.puml)
+[Диаграмма контейнеров C4](https://github.com/kotenev/architecture-pro-warmhouse/blob/warmhouse/diagrams/container/SmartHome_Container.puml)
 
 **Диаграмма компонентов (Components)**
 
-[Диаграмма компонентов C4](https://github.com/kotenev/architecture-pro-warmhouse/blob/warmhouse/docs/C4/Component.puml)
+[Диаграмма компонентов C4](https://github.com/kotenev/architecture-pro-warmhouse/blob/warmhouse/diagrams/component/SmartHome_Component_Backend.puml)
 
 **Диаграмма кода (Code)**
 
-[Диаграмма кода C4](https://github.com/kotenev/architecture-pro-warmhouse/blob/warmhouse/docs/C4/Code.puml)
+[Диаграмма кода C4](https://github.com/kotenev/architecture-pro-warmhouse/blob/warmhouse/diagrams/code/SmartHome_Code_SendCommand.puml)
 
 # Задание 3. Разработка ER-диаграммы
 
-[ER-диаграмма](https://github.com/kotenev/architecture-pro-warmhouse/blob/warmhouse/docs/ERD.puml)
+[ER-диаграмма](https://github.com/kotenev/architecture-pro-warmhouse/blob/warmhouse/diagrams/ER/SmartHome_ERD.puml)
 
 # Задание 4. Создание и документирование API
 
