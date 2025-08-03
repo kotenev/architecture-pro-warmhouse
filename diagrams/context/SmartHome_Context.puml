@@ -1,0 +1,17 @@
+@startuml
+title Smart Home Context Diagram
+
+top to bottom direction
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Context.puml
+
+Person(client, "Web Client", "Web-клиент приложения Smart Home")
+System(smart_home, "Smart Home App", "Приложение управляет отоплением в доме и проверяет температуру")
+
+System_Ext(sensor, "House Thermal Sensor", "Модуль управления отоплением")
+
+Rel(client, smart_home, "Удалённое включение/выключение отопления и просмотр текущей температуры")
+Rel(sensor, smart_home, "Регистрация датчика при включении")
+Rel(smart_home, sensor, "Управление датчиком и получение данных о температуре")
+
+@enduml
