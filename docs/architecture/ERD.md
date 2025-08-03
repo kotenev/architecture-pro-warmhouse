@@ -1,0 +1,139 @@
+```puml
+@startuml
+title "ER-диаграмма для экосистемы 'Умный дом'"
+
+' Настройка внешнего вида
+!define TABLE_BG_COLOR #FFFFFF
+!define TABLE_BORDER_COLOR #333333
+hide empty methods
+skinparam class {
+    BackgroundColor TABLE_BG_COLOR
+    BorderColor TABLE_BORDER_COLOR
+    ArrowColor TABLE_BORDER_COLOR
+}
+
+' Сущности
+entity "User" as users {
+  + id [PK]
+  --
+  email
+  password_hash
+  user_name
+  created_at
+  updated_at
+}
+
+entity "House" as houses {
+  + id [PK]
+  --
+  # user_id [FK]
+  house_name
+  house_address
+  created_at
+  updated_at
+}
+
+entity "Device" as devices {
+  + id [PK]
+  --
+  # type_id [FK]
+  # house_id [FK]
+  device_name
+  vendor_name
+  model_name
+  serial_number
+  status
+  created_at
+  updated_at
+}
+
+entity "DeviceType" as devicetypes {
+  + id [PK]
+  --
+  type_name
+  description
+}
+
+entity "Module" as modules {
+    + id [PK]
+    --
+    # device_id [FK]
+    type_id
+    module_name
+    current_value
+    units
+    status
+    created_at
+    updated_at
+}
+
+entity "ModuleType" as moduletypes {
+  + id [PK]
+  --
+  type_name
+  description
+}
+
+entity "TelemetryData" as telemetry {
+    + id [PK]
+    --
+    # module_id [FK]
+    timestamp
+    scope
+    resource_attributes
+    record
+    record_type
+    value
+}
+
+entity "Rule" as rules {
+    + id [PK]
+    --
+    # user_id [FK]
+    rule_name
+    status
+    created_at
+    updated_at
+}
+
+entity "Trigger" as triggers {
+    + id [PK]
+    --
+    # rule_id [FK]
+    # module_id [FK]
+    trigger_name
+    condition
+    threshold_value
+    status
+    created_at
+    updated_at
+}
+
+entity "Action" as actions {
+    + id [PK]
+    --
+    # rule_id [FK]
+    # module_id [FK]
+    command
+    command_value
+    created_at
+    updated_at
+}
+
+
+' Связи
+users   ||--o{ houses
+users   ||--o{ rules
+houses  ||--o{ devices
+devices }o--|| devicetypes
+devices ||--o{ modules
+devices ||--o{ telemetry
+modules }o--|| moduletypes
+modules ||--o{ telemetry
+modules ||--o{ triggers
+modules ||--o{ actions
+rules   ||--o{ triggers
+rules   ||--o{ actions
+
+@enduml
+```
