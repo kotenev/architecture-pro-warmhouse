@@ -1,16 +1,6 @@
 @startuml
 title "ER-диаграмма для экосистемы 'Умный дом'"
 
-' Настройка внешнего вида
-!define TABLE_BG_COLOR #FFFFFF
-!define TABLE_BORDER_COLOR #333333
-hide empty methods
-skinparam class {
-    BackgroundColor TABLE_BG_COLOR
-    BorderColor TABLE_BORDER_COLOR
-    ArrowColor TABLE_BORDER_COLOR
-}
-
 ' Сущности
 entity "User" as users {
   + id [PK]
