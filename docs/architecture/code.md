@@ -88,7 +88,7 @@ package "Control service" <<Microservice>> {
     control_service_pkg.CommandService ..> control_models.CommandRequest
 }
 
-' --- Межсервисные зависимости ---
+' --- Зависимости между сервисами ---
 
 ' Зависимости между клиентом и контроллером
 control_clients.DeviceServiceClient .> device_controller.DeviceController : "makes HTTP API call"
