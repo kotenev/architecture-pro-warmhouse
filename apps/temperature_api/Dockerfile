@@ -8,7 +8,7 @@ WORKDIR /app
 COPY . .
 
 # Build the application
-RUN CGO_ENABLED=0 GOOS=linux GO111MODULE=auto go build -o temperature-api
+RUN CGO_ENABLED=0 GOOS=linux GO111MODULE=auto go build -o temperature_api
 
 # Runtime stage
 FROM alpine:latest
@@ -20,10 +20,10 @@ RUN apk --no-cache add ca-certificates tzdata
 WORKDIR /app
 
 # Copy the binary from the builder stage
-COPY --from=builder /app/temperature-api .
+COPY --from=builder /app/temperature_api .
 
 # Expose the port the app runs on
 EXPOSE 8081
 
 # Command to run the application
-CMD ["./temperature-api"]
+CMD ["./temperature_api"]
