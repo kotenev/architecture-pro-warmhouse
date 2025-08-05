@@ -1,4 +1,3 @@
-```puml
 @startuml
 title "C4 Code: Контекст - Удаленное управление устройством (UML Class Diagram)"
 
@@ -98,4 +97,3 @@ control_models.CommandRequest ..> user_models.User : "uses UserID"
 device_models.Device ..> user_models.User : "uses UserID"
 
 @enduml
-```
