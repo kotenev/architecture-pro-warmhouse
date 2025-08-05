@@ -1,0 +1,99 @@
+@startuml
+title "C4 Code: Контекст - Удаленное управление устройством (UML Class Diagram)"
+
+' Стереотип для визуального обозначения микросервисов в пакетах
+stereotype "Microservice"
+
+' Package for User service
+package "User service" <<Microservice>> {
+    package "models" as user_models {
+        class User {
+          + ID: int
+          + Email: string
+        }
+    }
+}
+
+' Package for Device service
+package "Device service" <<Microservice>> {
+    package "controller" as device_controller {
+        class DeviceController {
+            - service: IDeviceService
+            + CheckDeviceOwnership(c *gin.Context)
+        }
+    }
+    package "service" as device_service_pkg {
+        interface IDeviceService {
+            + GetDeviceForUser(userID, deviceID int) (*models.Device, error)
+        }
+    }
+    package "models" as device_models {
+        class Device {
+          + ID: int
+          + UserID: int
+          + Name: string
+        }
+    }
+    ' Внутренние связи
+    device_controller.DeviceController --> device_service_pkg.IDeviceService
+    device_service_pkg.IDeviceService ..> device_models.Device
+}
+
+' Package for Control service
+package "Control service" <<Microservice>> {
+    package "controller" as control_controller {
+        class ControlController {
+            - commandService: ICommandService
+            + HandleControlRequest(c *gin.Context)
+        }
+    }
+    package "service" as control_service_pkg {
+        interface ICommandService {
+            + ProcessCommand(cmd models.CommandRequest) error
+        }
+        class CommandService {
+            - publisher: IMessagePublisher
+            - deviceAuth: IDeviceAuthorizer
+            + ProcessCommand(cmd models.CommandRequest) error
+        }
+    }
+    package "clients" as control_clients {
+        interface IDeviceAuthorizer {
+            + Authorize(userID, deviceID string) (bool, error)
+        }
+        class DeviceServiceClient {
+            + Authorize(userID, deviceID string) (bool, error)
+        }
+    }
+    package "messaging" as control_messaging {
+        interface IMessagePublisher {
+            + Publish(topic string, message []byte) error
+        }
+    }
+    package "models" as control_models {
+        class CommandRequest {
+          + UserID: string
+          + DeviceID: string
+          + Payload: map[string]interface{}
+        }
+    }
+    ' Внутренние связи
+    control_controller.ControlController --> control_service_pkg.ICommandService
+    control_service_pkg.CommandService ..|> control_service_pkg.ICommandService
+    control_service_pkg.CommandService --> control_clients.IDeviceAuthorizer
+    control_service_pkg.CommandService --> control_messaging.IMessagePublisher
+    control_clients.DeviceServiceClient ..|> control_clients.IDeviceAuthorizer
+    control_controller.ControlController ..> control_models.CommandRequest
+    control_service_pkg.CommandService ..> control_models.CommandRequest
+}
+
+' --- Межсервисные зависимости ---
+
+' Зависимости между клиентом и контроллером
+control_clients.DeviceServiceClient .> device_controller.DeviceController : "makes HTTP API call"
+
+' Зависимости, показывающие использование данных
+control_models.CommandRequest ..> user_models.User : "uses UserID"
+device_models.Device ..> user_models.User : "uses UserID"
+
+@enduml
