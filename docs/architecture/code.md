@@ -1,38 +1,101 @@
 ```puml
 @startuml
-title "C4 Code: Sequence Diagram - Отправка команды устройству"
+title "C4 Code: Контекст - Удаленное управление устройством (UML Class Diagram)"
 
-!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Sequence.puml
+' Стереотип для визуального обозначения микросервисов в пакетах
+stereotype "Microservice"
 
-autonumber
+' Package for User service
+package "User service" <<Microservice>> {
+    package "models" as user_models {
+        class User {
+          + ID: int
+          + Email: string
+        }
+    }
+}
 
-actor "Пользователь" as user
-participant "SPA" as spa
-participant "API Gateway" as gateway
-participant "Control Service" as control_service
-participant "Device Service" as device_service
-participant "Message Broker" as broker
-participant "Умное устройство" as device
+' Package for Device service
+package "Device service" <<Microservice>> {
+    package "controller" as device_controller {
+        class DeviceController {
+            - service: IDeviceService
+            + CheckDeviceOwnership(c *gin.Context)
+        }
+    }
+    package "service" as device_service_pkg {
+        interface IDeviceService {
+            + GetDeviceForUser(userID, deviceID int) (*models.Device, error)
+        }
+    }
+    package "models" as device_models {
+        class Device {
+          + ID: int
+          + UserID: int
+          + Name: string
+        }
+    }
+    ' Внутренние связи
+    device_controller.DeviceController --> device_service_pkg.IDeviceService
+    device_service_pkg.IDeviceService ..> device_models.Device
+}
 
-user -> spa: Нажимает "Включить свет"
-spa -> gateway: POST /api/v1/devices/123/control\n{"command": "turn_on"}
-gateway -> control_service: POST /control\n(с данными пользователя и команды)
+' Package for Control service
+package "Control service" <<Microservice>> {
+    package "controller" as control_controller {
+        class ControlController {
+            - commandService: ICommandService
+            + HandleControlRequest(c *gin.Context)
+        }
+    }
+    package "service" as control_service_pkg {
+        interface ICommandService {
+            + ProcessCommand(cmd models.CommandRequest) error
+        }
+        class CommandService {
+            - publisher: IMessagePublisher
+            - deviceAuth: IDeviceAuthorizer
+            + ProcessCommand(cmd models.CommandRequest) error
+        }
+    }
+    package "clients" as control_clients {
+        interface IDeviceAuthorizer {
+            + Authorize(userID, deviceID string) (bool, error)
+        }
+        class DeviceServiceClient {
+            + Authorize(userID, deviceID string) (bool, error)
+        }
+    }
+    package "messaging" as control_messaging {
+        interface IMessagePublisher {
+            + Publish(topic string, message []byte) error
+        }
+    }
+    package "models" as control_models {
+        class CommandRequest {
+          + UserID: string
+          + DeviceID: string
+          + Payload: map[string]interface{}
+        }
+    }
+    ' Внутренние связи
+    control_controller.ControlController --> control_service_pkg.ICommandService
+    control_service_pkg.CommandService ..|> control_service_pkg.ICommandService
+    control_service_pkg.CommandService --> control_clients.IDeviceAuthorizer
+    control_service_pkg.CommandService --> control_messaging.IMessagePublisher
+    control_clients.DeviceServiceClient ..|> control_clients.IDeviceAuthorizer
+    control_controller.ControlController ..> control_models.CommandRequest
+    control_service_pkg.CommandService ..> control_models.CommandRequest
+}
 
-control_service -> device_service: GET /devices/123/auth\n(Проверить, что юзер X может управлять устройством 123)
-device_service --> control_service: 200 OK
+' --- Межсервисные зависимости ---
 
-control_service -> control_service: Сформировать сообщение команды\n(e.g., {"device_id": 123, "action": "set_power", "value": "on"})
+' Зависимости между клиентом и контроллером
+control_clients.DeviceServiceClient .> device_controller.DeviceController : "makes HTTP API call"
 
-control_service -> broker: Publish(topic: "commands.light.123", message)
-broker -> device: Доставляет сообщение
-activate device
-device -> device: Включает свет
-deactivate device
-
-broker --> control_service: Ack (сообщение получено)
-control_service --> gateway: 202 Accepted (команда принята к исполнению)
-gateway --> spa: 202 Accepted
-spa -> user: Показывает "Команда отправлена"
+' Зависимости, показывающие использование данных
+control_models.CommandRequest ..> user_models.User : "uses UserID"
+device_models.Device ..> user_models.User : "uses UserID"
 
 @enduml
 ```
