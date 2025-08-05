@@ -3,14 +3,14 @@
 # Exit on any error
 set -e
 
-echo "Starting the Smart Home Sensor API..."
+echo "Starting new MVP of the Smart Home Sensor API..."
 echo "Building and starting containers..."
 docker compose up --build -d
 
 echo "Waiting for services to be ready..."
 # Wait for PostgreSQL to be ready
 for i in {1..30}; do
-  if docker exec smarthome-postgres pg_isready -U postgres > /dev/null 2>&1; then
+  if docker exec smarthome_postgres pg_isready -U postgres > /dev/null 2>&1; then
     echo "PostgreSQL is ready!"
     break
   fi
@@ -19,7 +19,7 @@ for i in {1..30}; do
 done
 
 # Check if PostgreSQL is ready
-if ! docker exec smarthome-postgres pg_isready -U postgres > /dev/null 2>&1; then
+if ! docker exec smarthome_postgres pg_isready -U postgres > /dev/null 2>&1; then
   echo "Error: PostgreSQL did not start within the expected time."
   exit 1
 fi
