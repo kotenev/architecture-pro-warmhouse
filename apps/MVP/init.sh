@@ -5,7 +5,7 @@ set -e
 
 echo "Starting new MVP of the Smart Home Sensor API..."
 echo "Building and starting containers..."
-docker-compose up --build -d
+docker compose up --build -d
 
 echo "Waiting for services to be ready..."
 # Wait for PostgreSQL to be ready

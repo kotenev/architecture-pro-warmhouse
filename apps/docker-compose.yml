@@ -43,7 +43,7 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      temperature-api:
+      temperature_api:
         condition: service_started
     environment:
       - DATABASE_URL=postgres://postgres:postgres@postgres:5432/smarthome
